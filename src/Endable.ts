@@ -14,7 +14,7 @@ interface UnsubaleTearDown {
   unsubscribe(): void;
 }
 const voidFun = () => { };
-export class Clearable {
+export class Endable {
   protected clears = new Set<teardown>();
   constructor() { }
   public track(fun: (() => (teardown | void))) {
@@ -30,17 +30,17 @@ export class Clearable {
     if (!ender) return voidFun;
     this.clears.add(ender);
     return () => {
-      this.exeEnder(ender);
+      this.clears.delete(ender);
     };
   }
-  public end() {
+  public end(reason?:string) {
     this.clears.forEach((el: any) => {
-      this.exeEnder(el);
+      this.exeEnder(el,reason);
     });
     this.clears.clear();
   }
-  protected exeEnder(el: any) {
-    console.info(`end a func ${el?.name || el?.constructor?.name}`);
+  protected exeEnder(el: any,reason?:string) {
+    console.info(`end a func ${el?.name || el?.constructor?.name} - ${reason?reason:''}`);
     this.clears.delete(el);
     if (typeof el === "function") this.safeExec(el);
     else if (typeof el.stop === "function") this.safeExec(el.stop.bind(el));
